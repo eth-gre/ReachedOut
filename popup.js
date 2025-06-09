@@ -46,12 +46,26 @@ async function loadFollowUps() {
             return;
         }
         
-        followUpsList.innerHTML = followUps.map(conn => `
-            <div class="follow-up-item">
-                <div class="follow-up-name">${conn.name}</div>
-                <div class="follow-up-date">Follow up: ${formatDate(conn.followUpDate)}</div>
-            </div>
-        `).join('');
+        followUpsList.innerHTML = followUps.map(conn => {
+    
+            let pfpLink = 'https://cdn.pfps.gg/pfps/2903-default-blue.png'
+    
+            if (conn.pfp) {
+                pfpLink = conn.pfp
+            }
+            
+            return `
+                <div class="follow-up-item">
+                    <div>
+                        <img src="${pfpLink}" class="connection-pfp"/img>
+                    </div>
+                    <div>
+                        <div class="follow-up-name">${conn.name}</div>
+                        <div class="follow-up-date">Follow up: ${formatDate(conn.followUpDate)}</div>
+                    </div>
+                </div>
+        `}).join('');
+
         
     } catch (error) {
         console.error('Error loading follow-ups:', error);

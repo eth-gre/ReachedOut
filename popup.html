@@ -15,8 +15,6 @@
         .header {
             text-align: center;
             margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #0077b5;
         }
         
         .header h1 {
@@ -55,6 +53,18 @@
         
         .actions {
             margin-bottom: 20px;
+        }
+
+        .actions-2 {
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+
+        .connection-pfp {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            object-fit: cover;
         }
         
         button {
@@ -136,6 +146,9 @@
             padding: 8px 0;
             border-bottom: 1px solid #eee;
             font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
         
         .follow-up-item:last-child {
@@ -167,7 +180,7 @@
 </head>
 <body>
     <div class="header">
-        <h1>🔗 LinkedIn Tracker</h1>
+        <h1>🔗 ReachedOut</h1>
     </div>
     
     <div class="stats">
@@ -184,15 +197,18 @@
     <div class="status" id="status"></div>
     
     <div class="actions">
-        <button id="scanConnections" class="btn-primary">🔍 Scan Current Page</button>
-        <button id="viewConnections" class="btn-secondary">📋 View All Connections</button>
-        <button id="exportData" class="btn-secondary">📥 Export Data</button>
-        <button id="clearData" class="btn-danger">🗑️ Clear All Data</button>
+        <button id="scanConnections" class="btn-secondary">🔍 Scan Current Page</button>
+        <button id="viewConnections" class="btn-primary">📋 View All Connections</button>
     </div>
     
     <div class="follow-ups">
         <h3>📅 Upcoming Follow-ups</h3>
         <div id="followUpsList"></div>
+    </div>
+    
+    <div class="actions-2">
+        <button id="exportData" class="btn-secondary">📥 Export Data</button>
+        <button id="clearData" class="btn-danger">🗑️ Clear All Data</button>
     </div>
     
     <script src="popup.js"></script>
