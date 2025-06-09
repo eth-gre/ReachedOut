@@ -1,4 +1,4 @@
-99% built with vibes. Largely because I refuse to write vanilla JS out of principle
+99% built with vibes. Largely because I refuse to write vanilla JS out of principle.
 Not gonna lie, vibe coding is kind of fun, although good luck trying to modify anything because the repo is a mess.
 
 # Features
