@@ -129,12 +129,15 @@ async function handleListClick(event) {
         event.preventDefault();
         const action = stageButton.dataset.action;
         const profileUrl = stageButton.dataset.profileUrl;
+        const name = stageButton.dataset.name;
         
         if (action.startsWith('stage-')) {
             const newStage = action.replace('stage-', '');
             await updateConnectionStage(profileUrl, newStage);
         } else if (action === 'delete') {
-            await deleteConnection(profileUrl, stageButton.dataset.name);
+            await deleteConnection(profileUrl, name);
+        } else if (action === 'followup') {
+            await automateFollowUp(profileUrl, name);
         }
         return;
     }
@@ -202,6 +205,34 @@ async function deleteConnection(profileUrl, name) {
     await saveData();
     updateStats();
     applyFilters();
+}
+
+async function automateFollowUp(profileUrl, name) {
+    try {
+        // Personalized message template
+        const message = `Hi ${name}! Thanks for connecting. I'd love to learn more about your work and see if there might be opportunities for us to collaborate. Would you be open to a brief chat sometime this week?`;
+        
+        // Copy message to clipboard
+        await navigator.clipboard.writeText(message);
+        console.log('Message copied to clipboard');
+        
+        // Open LinkedIn profile in new tab
+        const newTab = window.open(profileUrl, '_blank');
+        
+        // Wait for tab to load, then try to click message button
+        setTimeout(() => {
+            if (newTab && !newTab.closed) {
+                // Focus on the new tab
+                newTab.focus();
+            }
+        }, 2000);
+
+        await updateConnectionStage(profileUrl, 'followedUp');
+        
+    } catch (error) {
+        console.error('Error in automated follow-up:', error);
+        alert('Error copying message to clipboard');
+    }
 }
 
 async function saveData() {
@@ -356,16 +387,32 @@ function displayConnections() {
 
 function getActionButtons(conn) {
     const stage = DEAL_STAGES[conn.dealStage];
-    if (!stage || stage.next.length === 0) {
-        return `<button class="delete-btn" data-action="delete" data-profile-url="${conn.profileUrl}" data-name="${conn.name}">Delete</button>`;
+    let buttons = '';
+    
+    // Add follow-up button for connected contacts with overdue follow-up dates
+    if (conn.dealStage === 'connected' && conn.followUpDate) {
+        const followUpDate = new Date(conn.followUpDate);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        if (followUpDate.getTime() <= today.getTime()) {
+            buttons += `<button class="followup-btn" data-action="followup" data-profile-url="${conn.profileUrl}" data-name="${conn.name}">Quick Follow-up</button> `;
+        }
     }
     
-    const buttons = stage.next.map(nextStage => {
-        const nextStageConfig = DEAL_STAGES[nextStage];
-        return `<button class="stage-btn" data-action="stage-${nextStage}" data-profile-url="${conn.profileUrl}">${nextStageConfig.label}</button>`;
-    }).join('');
+    // Add stage progression buttons
+    if (stage && stage.next.length > 0) {
+        const stageButtons = stage.next.map(nextStage => {
+            const nextStageConfig = DEAL_STAGES[nextStage];
+            return `<button class="stage-btn" data-action="stage-${nextStage}" data-profile-url="${conn.profileUrl}">${nextStageConfig.label}</button>`;
+        }).join(' ');
+        buttons += stageButtons + ' ';
+    }
     
-    return `${buttons} <button class="delete-btn" data-action="delete" data-profile-url="${conn.profileUrl}" data-name="${conn.name}">Delete</button>`;
+    // Add delete button
+    buttons += `<button class="delete-btn" data-action="delete" data-profile-url="${conn.profileUrl}" data-name="${conn.name}">Delete</button>`;
+    
+    return buttons;
 }
 
 function getConnectionMeta(conn) {
