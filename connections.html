@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>LinkedIn CRM - Connection Pipeline</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            color: #0077b5;
+            margin-bottom: 10px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #0077b5;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        .filters {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .filter-row {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .filter-group label {
+            font-size: 12px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .filter-group input,
+        .filter-group select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .connections-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .connections-header {
+            padding: 15px 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #eee;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .connection-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 20px;
+        }
+
+        .connection-item:last-child {
+            border-bottom: none;
+        }
+
+        .connection-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .connection-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .connection-name a {
+            color: #0077b5;
+            text-decoration: none;
+        }
+
+        .connection-name a:hover {
+            text-decoration: underline;
+        }
+
+        .connection-title {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .connection-meta {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 10px;
+        }
+
+        .connection-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .stage-btn {
+            padding: 6px 12px;
+            border: 1px solid #0077b5;
+            background: white;
+            color: #0077b5;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .stage-btn:hover {
+            background: #0077b5;
+            color: white;
+        }
+
+        .delete-btn {
+            padding: 6px 12px;
+            border: 1px solid #dc3545;
+            background: white;
+            color: #dc3545;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .delete-btn:hover {
+            background: #dc3545;
+            color: white;
+        }
+
+        .connection-stage {
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            white-space: nowrap;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .connection-pfp {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+        }
+
+        .pagination {
+            padding: 20px;
+            text-align: center;
+            background: white;
+            border-top: 1px solid #eee;
+        }
+
+        .pagination button {
+            padding: 8px 12px;
+            margin: 0 5px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .pagination button:hover {
+            background: #f8f9fa;
+        }
+
+        .pagination button.active {
+            background: #0077b5;
+            color: white;
+            border-color: #0077b5;
+        }
+
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .tabs {
+            display: flex;
+            background: white;
+            border-radius: 8px 8px 0 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 0;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+
+        .tab {
+            padding: 15px 20px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            font-weight: 500;
+            color: #666;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .tab.active {
+            color: #0077b5;
+            border-bottom-color: #0077b5;
+        }
+
+        .tab:hover {
+            background: #f8f9fa;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .filter-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .connection-item {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .connection-actions {
+                justify-content: flex-start;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            body {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🚀 LinkedIn CRM - Connection Pipeline</h1>
+        <p>Track your connections through the sales funnel</p>
+    </div>
+
+    <div class="stats">
+        <div class="stat-card">
+            <div class="stat-number" id="totalConnections">0</div>
+            <div class="stat-label">Total Connections</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="pendingConnections">0</div>
+            <div class="stat-label">Pending</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="followUpConnections">0</div>
+            <div class="stat-label">Followed Up</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="chatBookedConnections">0</div>
+            <div class="stat-label">Chats Booked</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="onboardingConnections">0</div>
+            <div class="stat-label">Onboarding</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="onboardedConnections">0</div>
+            <div class="stat-label">Onboarded</div>
+        </div>
+    </div>
+
+    <div class="tabs">
+        <div class="tab active" data-tab="all">All Connections</div>
+        <div class="tab" data-tab="pending">Pending</div>
+        <div class="tab" data-tab="connected">Connected</div>
+        <div class="tab" data-tab="followedUp">Followed Up</div>
+        <div class="tab" data-tab="upcomingChat">Chat Booked</div>
+        <div class="tab" data-tab="upcomingOnboard">Onboarding</div>
+        <div class="tab" data-tab="onboarded">Onboarded</div>
+        <div class="tab" data-tab="declined">Declined</div>
+    </div>
+
+    <div class="filters">
+        <div class="filter-row">
+            <div class="filter-group">
+                <label>Search</label>
+                <input type="text" id="searchFilter" placeholder="Search by name or title...">
+            </div>
+            <div class="filter-group">
+                <label>Sort by</label>
+                <select id="sortFilter">
+                    <option value="name">Name</option>
+                    <option value="date">Connection Date</option>
+                    <option value="stage">Deal Stage</option>
+                    <option value="updated">Last Updated</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Order</label>
+                <select id="orderFilter">
+                    <option value="asc">Ascending</option>
+                    <option value="desc">Descending</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="connections-container">
+        <div class="connections-header">
+            <span id="connectionsCount">0 connections</span>
+        </div>
+        <div id="connectionsList">
+            <div class="empty-state">
+                <p>Loading connections...</p>
+            </div>
+        </div>
+        <div id="pagination" class="pagination" style="display: none;">
+            <!-- Pagination buttons will be dynamically generated -->
+        </div>
+    </div>
+    <script src="connections.js"></script>
+</body>
+</html>
