@@ -257,6 +257,10 @@
 
         .tab {
             padding: 15px 20px;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            display: flex;
             cursor: pointer;
             border-bottom: 2px solid transparent;
             font-weight: 500;
@@ -268,6 +272,18 @@
         .tab.active {
             color: #0077b5;
             border-bottom-color: #0077b5;
+        }
+
+        #reachout-marker {
+            background: rgb(182, 6, 6);
+            color: #ffffff;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
         }
 
         .tab:hover {
@@ -343,6 +359,10 @@
         <div class="tab active" data-tab="all">All Connections</div>
         <div class="tab" data-tab="pending">Pending</div>
         <div class="tab" data-tab="connected">Connected</div>
+        <div class="tab" data-tab="reachout">
+            Reachout Required
+            <div id="reachout-marker"></div>
+        </div>
         <div class="tab" data-tab="followedUp">Followed Up</div>
         <div class="tab" data-tab="upcomingChat">Chat Booked</div>
         <div class="tab" data-tab="upcomingOnboard">Onboarding</div>

@@ -73,6 +73,7 @@ function updateStats() {
     const stats = {
         total: allData.length,
         pending: allData.filter(c => c.dealStage === 'pending').length,
+        reachoutRequired: allData.filter(c => new Date(c.followUpDate).getTime() <= Date.now() && c.dealStage === 'connected').length,
         connected: allData.filter(c => c.dealStage === 'connected').length,
         followedUp: allData.filter(c => c.dealStage === 'followedUp').length,
         upcomingChat: allData.filter(c => c.dealStage === 'upcomingChat').length,
@@ -88,6 +89,14 @@ function updateStats() {
     document.getElementById('chatBookedConnections').textContent = stats.upcomingChat;
     document.getElementById('onboardingConnections').textContent = stats.upcomingOnboard;
     document.getElementById('onboardedConnections').textContent = stats.onboarded;
+    
+    // If there is no reachout needed, hide it
+    if (stats.reachoutRequired === 0) {
+        document.getElementById('reachout-marker').style.display = 'none'
+    }
+    else {
+        document.getElementById('reachout-marker').textContent = stats.reachoutRequired;
+    }
 }
 
 function setupEventListeners() {
@@ -223,6 +232,9 @@ function applyFilters() {
         case 'pending':
             connections = allData.filter(c => c.dealStage === 'pending');
             break;
+        case 'reachout':
+            connections = allData.filter(c => new Date(c.followUpDate).getTime() <= Date.now() && c.dealStage === 'connected')
+            break
         case 'connected':
             connections = allData.filter(c => c.dealStage === 'connected');
             break;
@@ -310,10 +322,16 @@ function displayConnections() {
     connectionsList.innerHTML = pageConnections.map(conn => {
         const stage = DEAL_STAGES[conn.dealStage] || DEAL_STAGES.connected;
         const actionButtons = getActionButtons(conn);
+
+        let pfpLink = 'https://cdn.pfps.gg/pfps/2903-default-blue.png'
+
+        if (conn.pfp) {
+            pfpLink = conn.pfp
+        }
         
         return `
             <div class="connection-item">
-                <img src="${conn.pfp}" class="connection-pfp"/img>
+                <img src="${pfpLink}" class="connection-pfp"/img>
                 <div class="connection-info">
                     <div class="connection-name">
                         <a href="${conn.profileUrl}" target="_blank">${conn.name}</a>
