@@ -472,7 +472,7 @@ function displayPagination() {
     pagination.style.display = 'block';
 
     let paginationHTML = '';
-    paginationHTML += `<button ${currentPage === 1 ? 'disabled' : ''} onclick="changePage(${currentPage - 1})">Previous</button>`;
+    paginationHTML += `<button ${currentPage === 1 ? 'disabled' : ''} data-page="${currentPage - 1}">Previous</button>`;
 
     const maxButtons = 5;
     let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
@@ -483,26 +483,35 @@ function displayPagination() {
     }
 
     if (startPage > 1) {
-        paginationHTML += `<button onclick="changePage(1)">1</button>`;
+        paginationHTML += `<button data-page="1">1</button>`;
         if (startPage > 2) {
             paginationHTML += '<span>...</span>';
         }
     }
 
     for (let i = startPage; i <= endPage; i++) {
-        paginationHTML += `<button class="${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</button>`;
+        paginationHTML += `<button class="${i === currentPage ? 'active' : ''}" data-page="${i}">${i}</button>`;
     }
 
     if (endPage < totalPages) {
         if (endPage < totalPages - 1) {
             paginationHTML += '<span>...</span>';
         }
-        paginationHTML += `<button onclick="changePage(${totalPages})">${totalPages}</button>`;
+        paginationHTML += `<button data-page="${totalPages}">${totalPages}</button>`;
     }
 
-    paginationHTML += `<button ${currentPage === totalPages ? 'disabled' : ''} onclick="changePage(${currentPage + 1})">Next</button>`;
+    paginationHTML += `<button ${currentPage === totalPages ? 'disabled' : ''} data-page="${currentPage + 1}">Next</button>`;
 
     pagination.innerHTML = paginationHTML;
+    
+    // Add event listeners to pagination buttons
+    pagination.querySelectorAll('button[data-page]').forEach(button => {
+        button.addEventListener('click', function() {
+            if (!this.disabled) {
+                changePage(parseInt(this.dataset.page));
+            }
+        });
+    });
 }
 
 function changePage(page) {
@@ -513,7 +522,7 @@ function changePage(page) {
     displayConnections();
 
     document.querySelector('.connections-container').scrollIntoView({
-        behavior: 'smooth',
+        behavior: 'instant',
         block: 'start'
     });
 }
