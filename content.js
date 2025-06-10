@@ -112,6 +112,7 @@ async function saveConnectionsData(scannedConnections) {
                     ...pendingData, // Include existing pending data like dateSent
                     ...scannedConn, // Include data from the current scan (name, title, profileUrl). scannedConn.status will likely be 'connected'.
                     status: 'connected', // Ensure status is explicitly 'connected'
+                    dealStage: 'connected', // Add dealStage for consistency with display logic
                     dateConnected: new Date().toISOString(), // Record the date/time the connection was detected as accepted (the scan time)
                     lastUpdated: new Date().toISOString()
                 };

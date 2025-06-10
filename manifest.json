@@ -1,8 +1,14 @@
 {
   "manifest_version": 3,
-  "name": "LinkedIn Connections Tracker",
+  "name": "ReachedOut",
   "version": "1.0",
-  "description": "Track LinkedIn connections and follow up reminders",
+  "description": "Simple LinkedIn CRM",
+  "icons": {
+    "16": "icons/16.png",
+    "32": "icons/32.png",
+    "64": "icons/64.png",
+    "128": "icons/128.png"
+  },
   "content_scripts": [
     {
       "matches": ["https://www.linkedin.com/mynetwork/invite-connect/connections/*"],
@@ -20,7 +26,7 @@
   },
   "action": {
     "default_popup": "popup.html",
-    "default_title": "LinkedIn Connections Tracker"
+    "default_title": "ReachedOut"
   },
   "permissions": [
     "storage",

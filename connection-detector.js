@@ -39,6 +39,58 @@ async function savePendingConnection(profileUrl, name, title, pfp) {
 }
 
 /**
+ * Save a connection as already connected (manual add)
+ */
+async function saveManualConnection(profileUrl, name, title, pfp) {
+    try {
+        const result = await chrome.storage.local.get(['connections']);
+        const connections = result.connections || {};
+        
+        // Check if connection already exists
+        if (connections[profileUrl]) {
+            console.log(`Connection already exists: ${name}`);
+            chrome.runtime.sendMessage({
+                type: 'CONNECTION_EXISTS',
+                data: { name }
+            }).catch(() => {});
+            return;
+        }
+        
+        const connectionData = {
+            name: name || 'Unknown',
+            profileUrl: profileUrl,
+            pfp: pfp || '',
+            title: title || '',
+            status: 'connected',
+            dealStage: 'connected',
+            dateConnected: new Date().toISOString(),
+            lastUpdated: new Date().toISOString(),
+            followUpDate: (() => {
+                const followUpDate = new Date();
+                followUpDate.setDate(followUpDate.getDate() + 14);
+                followUpDate.setHours(0, 0, 0, 0);
+                return followUpDate.toISOString();
+            })()
+        };
+        
+        connections[profileUrl] = connectionData;
+        
+        await chrome.storage.local.set({ connections });
+        
+        console.log(`Manual connection saved: ${name}`);
+        
+        // Notify popup if open
+        chrome.runtime.sendMessage({
+            type: 'MANUAL_CONNECTION_ADDED',
+            data: connectionData
+        }).catch(() => {});
+        
+    } catch (error) {
+        console.error('Error saving manual connection:', error);
+    }
+}
+
+/**
  * Extract profile information from the current page or button context
  */
 function extractProfileInfo(buttonElement) {
@@ -146,4 +198,17 @@ const observer = new MutationObserver((mutations) => {
 observer.observe(document.body, {
     childList: true,
     subtree: true
+});
+
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.action === 'MARK_AS_CONNECTED') {
+        const profileInfo = extractProfileInfo(document.body);
+        if (profileInfo.profileUrl) {
+            saveManualConnection(profileInfo.profileUrl, profileInfo.name, profileInfo.title, profileInfo.pfp);
+            sendResponse({ success: true, data: profileInfo });
+        } else {
+            sendResponse({ success: false, error: 'Could not extract profile info' });
+        }
+        return true; // Keep message channel open for async response
+    }
 });

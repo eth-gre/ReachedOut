@@ -162,6 +162,43 @@ function setupEventListeners() {
             }
         }
     });
+
+    // Mark as connected button
+    document.getElementById('markConnected').addEventListener('click', async function() {
+        const button = this;
+        const originalText = button.textContent;
+        
+        button.classList.add('loading');
+        button.textContent = '🔄 Adding...';
+        
+        try {
+            // Check if we're on a LinkedIn profile page
+            const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+            
+            if (!tab.url.includes('linkedin.com/in/')) {
+                showStatus('Please navigate to a LinkedIn profile page first', 'error');
+                return;
+            }
+            
+            // Send message to content script
+            const response = await chrome.tabs.sendMessage(tab.id, { action: 'MARK_AS_CONNECTED' });
+            
+            if (response && response.success) {
+                showStatus(`✅ ${response.data.name} added as connected!`, 'success');
+                await loadStats();
+                await loadFollowUps();
+            } else {
+                showStatus('❌ Could not extract profile information', 'error');
+            }
+            
+        } catch (error) {
+            console.error('Error marking as connected:', error);
+            showStatus('❌ Error adding connection. Make sure you\'re on a LinkedIn profile page.', 'error');
+        } finally {
+            button.classList.remove('loading');
+            button.textContent = originalText;
+        }
+    });
 }
 
 /**
@@ -197,13 +234,20 @@ function formatDate(dateString) {
 }
 
 // Listen for messages from content scripts
+// Listen for messages from content scripts
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.type === 'CONNECTIONS_UPDATED') {
         loadStats();
         loadFollowUps();
-        showStatus(`✅ Updated ${message.data.updatedCount} connections, found ${message.data.newCount} new ones`, 'success');
+        showStatus(`✅ ${message.data.acceptedCount} pending requests accepted`, 'success');
     } else if (message.type === 'PENDING_CONNECTION_ADDED') {
         loadStats();
         showStatus(`📤 Pending connection added: ${message.data.name}`, 'success');
+    } else if (message.type === 'MANUAL_CONNECTION_ADDED') {
+        loadStats();
+        loadFollowUps();
+        showStatus(`🔗 Connected: ${message.data.name}`, 'success');
+    } else if (message.type === 'CONNECTION_EXISTS') {
+        showStatus(`ℹ️ ${message.data.name} is already in your system`, 'info');
     }
 });
